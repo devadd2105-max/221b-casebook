@@ -56,6 +56,7 @@ export function same(a, b) {
   if (a === b) return true;
   const len = Math.min(a.length, b.length);
   if (len < 5) return false;
+  if (a[0] !== b[0]) return false;
   return lev(a, b) <= (len >= 9 ? 2 : 1);
 }
 

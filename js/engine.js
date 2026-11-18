@@ -1,7 +1,7 @@
 // The game itself: reads what Holmes types and makes it happen.
 import { parse, parseTime } from './parser.js';
 import { findPhrase } from './text.js';
-import { PEOPLE, PLACES, OBJECTS, PAPERS, MAKERS, PAPER_ORDER, parentPlace, travelMinutes, travelFare } from './case/world.js';
+import { PEOPLE, PLACES, OBJECTS, PAPERS, MAKERS, PAPER_ORDER, TOPICS, parentPlace, travelMinutes, travelFare } from './case/world.js';
 import { FACTS } from './case/facts.js';
 import { OPTIONS } from './case/options.js';
 import { PAPER_EDITIONS, PAPER_PROFILE } from './case/papers.js';
@@ -43,6 +43,7 @@ function nextAvailability(s, id) {
 function arrive(s, placeId, out, info) {
   const first = !knowsPlace(s, placeId) || !s.flags['visited_' + parentPlace(placeId)];
   learnPlace(s, placeId); learnPlace(s, parentPlace(placeId));
+  if (s.place !== placeId) s.prevPlace = s.place;
   s.place = placeId;
   s.flags['visited_' + parentPlace(placeId)] = true;
   const p = PLACES[placeId];
@@ -304,6 +305,26 @@ function actOne(s, text, out) {
   const I = p.intents;
   const found = p.found;
 
+  // --- everyday utility commands
+  if (!found.person.length && !found.object.length && !found.place.length) {
+    if (/\b(map|london)\b/i.test(text) && /\b(show|open|see|look|view|check|where)\b/i.test(text)) return { ui: { open: 'map' } };
+    if (/\b(casebook|notes|notebook|my notes|evidence|clues)\b/i.test(text)) return { ui: { open: 'casebook' } };
+    if (/\b(money|purse|cash|funds|shillings|afford)\b/i.test(text) && /\b(how|what|check|much|have|left)\b/i.test(text)) {
+      out.push(sys(`Your purse holds ${money(s.purse)}. It is ${clockText(s.t)}.`)); return;
+    }
+    if (/\b(what('?s| is) the (time|date|day)|what time|what day|the time)\b/i.test(text)) {
+      out.push(sys(`It is ${clockText(s.t)}. You have until ${clockText(deadlineNow(s))}.`)); return;
+    }
+    if (/^\s*(go back|back|return|return to where i was|go to where i was)\s*$/i.test(text) && s.prevPlace && s.prevPlace !== s.place) { goTo(s, s.prevPlace, out); return; }
+    if (/^\s*(leave|exit|go out|step outside|go outside)\s*$/i.test(text)) {
+      const dest = parentPlace(s.place) === 'baker_street' ? null : (s.prevPlace && s.prevPlace !== s.place ? s.prevPlace : 'baker_street');
+      if (!dest) { out.push(narr('You have nowhere in particular to go. Say where.')); return; }
+      goTo(s, dest, out); return;
+    }
+    if (/^\s*(save|undo|restart|quit)\b/i.test(text)) { out.push(sys('The game saves itself after every move. Use the Menu button to start afresh.')); return; }
+  }
+
+
   // --- accusing
   if (I.ACCUSE && (found.person.length || /\b(accuse|name the (thief|culprit)|culprit|solved|my solution|final answer|close the case)\b/i.test(text))) {
     const suspect = found.person.find((e) => e.id !== 'watson' && e.id !== 'hudson')?.id ?? null;
@@ -351,6 +372,7 @@ function actOne(s, text, out) {
 
   if (sendVerb) { return service(s, p, out); }
   if (wireVerb && personE && PEOPLE[personE.id].remote) { return askPerson(s, p, personE.id, out, { remote: true }); }
+  if (wireVerb && personE && ['watson', 'hudson'].includes(personE.id) && peopleHere(s).includes(personE.id)) { return askPerson(s, p, personE.id, out, {}); }
   if (wireVerb && personE && !PEOPLE[personE.id].remote) { out.push(narr('A telegram will not do for that. You will have to see him.')); return; }
 
   if (placeE && (goVerb || (!personE && !found.object.length && !I.EXAMINE && !I.WAIT)) && !I.ASK) {
@@ -362,7 +384,7 @@ function actOne(s, text, out) {
 
   // --- "go to Tench", "visit Mrs. Hodge": just travel to wherever that person is found
   if (personE && I.GO && !I.ASK && !Object.keys(p.topics).length && !PEOPLE[personE.id].remote && !['watson', 'hudson'].includes(personE.id)) {
-    if (!knowsPerson(s, personE.id)) { out.push(narr(`The name ${PEOPLE[personE.id].short} means nothing to you yet.`)); return; }
+    if (!knowsPerson(s, personE.id)) { out.push(narr(`You know of no ${PEOPLE[personE.id].short} in this affair yet.`)); return; }
     const home = PEOPLE[personE.id].home;
     const where = whereIs(s, personE.id) || home;
     if (where && !knowsPlace(s, home)) learnPlace(s, home);
@@ -375,6 +397,11 @@ function actOne(s, text, out) {
   if (personE && !(found.object.length && I.EXAMINE && !I.ASK && !Object.keys(p.topics).length)) {
     if (I.WAIT && !I.ASK && !Object.keys(p.topics).length) { /* "wait for Mycroft" etc. falls to waiting */ }
     else return askPerson(s, p, personE.id, out, {});
+  }
+
+  // --- a question to nobody in particular goes to Watson, who is always at your elbow
+  if (/^\s*(who|is there|does anyone|can anyone|anyone|do you know|do we know|where can i find|who knows)\b/i.test(text) && !found.person.length && !found.object.length && !found.place.length && Object.keys(p.topics).length && !I.GO) {
+    return askPerson(s, p, 'watson', out, {});
   }
 
   // --- examining
@@ -392,10 +419,23 @@ function actOne(s, text, out) {
   }
   if (I.EXAMINE) return lookAround(s, out);
 
+  if (/^\s*(hello|hi|hey|good (morning|evening|afternoon)|watson)\b/i.test(text) && p.found.person.length === 0) {
+    out.push(say('Watson', 'Good day, Holmes. I am at your service whenever you have decided what to do.'));
+    out.push({ k: 'suggest', items: suggest(s).slice(0, 3) });
+    return;
+  }
+  if (/\b(who am i|where am i|what is (this|going on)|what('?s| is) the case|what happened|the story|recap|remind me|what was stolen|why are we here)\b/i.test(text)) {
+    out.push(narr('You are Sherlock Holmes. The Marlowe Star, a blue-white diamond, was taken from a locked safe at Marlowe House, Campden Hill, on Saturday night, and a polite note was left in its place. Whoever did it will be beyond reach by Friday afternoon.'));
+    if (!hasFlag(s, 'has_note')) out.push(narr('Sir Alistair holds the note. You have only his telegram.'));
+    out.push({ k: 'suggest', items: suggest(s).slice(0, 3) });
+    return;
+  }
   out.push(narr(vague(s, p)));
+  out.push({ k: 'suggest', items: suggest(s).slice(0, 3) });
 }
 
 function vague(s, p) {
+  if (/\b(station|train|railway|paddington|waterloo|euston|liverpool street|boat)\b/i.test(p.raw || '')) return 'London has a dozen termini, and a man cannot be traced through them blind. Someone who watches the bookings, at the Yard or the Diogenes Club, would serve better.';
   if (p.found.person.length === 0 && p.found.place.length === 0 && p.found.object.length === 0) {
     return 'You turn it over. It is not quite a thing you can do from here. Say where you will go, whom you will question, or what you will examine.';
   }
@@ -406,7 +446,7 @@ function vague(s, p) {
 function askPerson(s, p, id, out, { remote = false } = {}) {
   const per = PEOPLE[id];
   if (!knowsPerson(s, id)) {
-    out.push(narr(`The name ${per.short} means nothing to you yet; no one has mentioned such a person in the case.`));
+    out.push(narr(`You know of no ${per.short} in this affair yet. Someone will have to mention the name.`));
     return;
   }
   if (id === 'hudson' || id === 'watson') {
@@ -584,25 +624,49 @@ function playFlavour(s, p, out) {
 }
 
 // ---------------------------------------------------------------- suggestions (a nudge, never a menu)
+const TOPIC_LABEL = { theft: 'the theft', evening: 'that evening', guests: 'the guests', combination: 'the combination', key: 'the key', safe: 'the safe', note: 'the note', paper: 'the paper', hand: 'the handwriting', ink: 'the ink', debts: 'money troubles', sister: 'his sister', sale: 'a sale of the Star', insurance: 'the insurance', quarrel: 'a quarrel', stairs: 'the back stairs', garden: 'the garden', light: 'the study lamp', servants: 'the servants', boat: 'the boat trains', fence: 'a fence', professional: 'professional thieves', record: 'a record', warrant: 'a warrant', police: 'the police', curse: 'the Star’s curse', value: 'the Star’s value', character: 'his character', employer: 'his employer', lodging: 'his lodging', letters: 'his letters', customers: 'the customers', warn: 'a warning', callers: 'the callers at the door' };
 export function suggest(s) {
   const out = [];
   const h = parentPlace(s.place);
+  const here = peopleHere(s);
+  const asked = (id) => OPTIONS.some((o) => o.who === id && s.done[o.id]);
   if (h === 'baker_street') {
     if (!hasFact(s, 'theft')) out.push('Examine the telegram');
-    if (!s.papersRead.length) out.push('Ask Watson to read the morning papers');
     if (hasFlag(s, 'has_note') && !hasFact(s, 'paper_joynson')) out.push('Compare the note with my paper specimens');
-    if (!hasFlag(s, 'has_note')) out.push('Go to Marlowe House');
-    else out.push('Think it over');
-  } else if (h === 'marlowe_house') {
-    if (!hasFlag(s, 'has_note')) out.push('Question Sir Alistair');
-    if (s.place !== 'marlowe_study') out.push('Go to the study');
-    else out.push('Examine the safe', 'Search the study');
-    out.push('Ask Mary what she saw on the back stairs');
-  } else {
-    out.push('Ask them what they know', 'Think it over');
+    if (!s.papersRead.length) out.push('Ask Watson to read the morning papers');
   }
-  out.push('Go home');
-  return out.slice(0, 5);
+  if (h === 'marlowe_house' && !hasFlag(s, 'has_note')) out.push('Question Sir Alistair');
+  // people on the spot you have not yet spoken to
+  for (const id of here) {
+    if (['watson', 'hudson'].includes(id) || asked(id)) continue;
+    out.push(`Question ${PEOPLE[id].short}`);
+  }
+  // a thread worth pulling with someone you have already questioned here
+  const basicOk = (o) => { const n = o.need || {}; return (n.facts || []).every((f) => hasFact(s, f)) && (!n.anyFacts || n.anyFacts.some((f) => hasFact(s, f))) && (n.notFacts || []).every((f) => !hasFact(s, f)) && (n.flags || []).every((f) => hasFlag(s, f)) && (n.notFlags || []).every((f) => !hasFlag(s, f)) && !n.pay && !n.evidence && n.alertAtLeast == null; };
+  for (const id of here) {
+    if (['watson', 'hudson'].includes(id) || !asked(id)) continue;
+    const o = OPTIONS.find((x) => x.who === id && x.kind === 'ask' && !x.remote && !s.done[x.id] && x.topics.some((tp) => tp !== 'greet' && TOPICS[tp]) && basicOk(x) && (x.gives.length || x.learnsP || x.learnsPl));
+    if (o) { const tp = o.topics.find((x) => x !== 'greet' && TOPICS[x]); out.push(`Ask ${PEOPLE[id].short} ${o.need?.tone === 'gentle' ? 'gently ' : o.need?.tone === 'harsh' ? 'sharply ' : ''}about ${TOPIC_LABEL[tp] || TOPICS[tp][0]}`); break; }
+  }
+  // rooms to search where you stand
+  const exam = OPTIONS.filter((o) => o.kind === 'examine' && OBJECTS[o.obj]?.at === s.place && !s.done[o.id]);
+  if (exam.length) out.push(s.place === 'marlowe_study' ? 'Search the study' : 'Search the room');
+  // people you know of, elsewhere, not yet questioned
+  for (const id of s.known.people) {
+    if (['watson', 'hudson'].includes(id) || here.includes(id) || asked(id)) continue;
+    const per = PEOPLE[id]; if (!per) continue;
+    out.push(per.remote ? `Wire ${per.short}` : `Question ${per.short}`);
+  }
+  // places you know of but have never been to
+  for (const id of s.known.places) {
+    const pl = PLACES[id]; if (!pl || parentPlace(id) !== id || id === 'baker_street') continue;
+    if (!s.flags['visited_' + id] && id !== h) out.push(`Go to ${pl.short}`);
+  }
+  if (h === 'baker_street' && hasFlag(s, 'has_note')) out.push('Think it over');
+  const uniq = [...new Set(out)];
+  if (uniq.length < 5 && h !== 'baker_street') uniq.push('Go home');
+  if (!uniq.length) uniq.push('Think it over');
+  return uniq.slice(0, 5);
 }
 
 export { peopleHere };

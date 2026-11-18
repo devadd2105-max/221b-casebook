@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { newGame, hasFact, hasFlag } from '../js/state.js';
-import { act } from '../js/engine.js';
+import { act, suggest } from '../js/engine.js';
 import { IDEAL_COMMANDS, accuse } from '../js/scoring.js';
 import { weighEvidence } from '../js/evidence.js';
 import { parse } from '../js/parser.js';
@@ -106,4 +106,51 @@ test('Pell confesses when the case is sound and he is confronted, if not alarmed
   act(s, 'ask pell about the library');
   act(s, 'confront pell with everything: the maid on the back stairs, the key, the debt, the paper');
   assert.ok(hasFlag(s, 'pell_confessed') || hasFlag(s, 'pell_shaken'));
+});
+
+test('typo matcher does not turn "match" into "watch" (no accidental Irregulars errand)', () => {
+  const s = run(['go to marlowe house', 'interview sir alistair', 'go home']);
+  const purse = s.purse;
+  act(s, 'who can tell me if two handwritings match');
+  assert.equal(s.purse, purse);
+  assert.ok(s.known.people.includes('finch'));
+});
+
+test('small talk, recap and utility commands never fall into a dead end', () => {
+  const s = newGame();
+  for (const c of ['hello', 'who am i', 'what is this about', 'how much money do I have', 'what time is it']) {
+    const r = act(s, c);
+    assert.ok(r.out.length > 0, c);
+    assert.ok(!r.out.some((o) => /not quite a thing you can do/.test(o.text || '')), c);
+  }
+  assert.equal(act(s, 'show the map').ui.open, 'map');
+  assert.equal(act(s, 'open my casebook').ui.open, 'casebook');
+});
+
+test('go back and leave return you sensibly', () => {
+  const s = run(['go to marlowe house', 'go to the study']);
+  act(s, 'go back');
+  assert.equal(s.place, 'marlowe_house');
+  act(s, 'leave');
+  assert.ok(s.place);
+});
+
+test('suggestions always exist and never repeat', () => {
+  const s = newGame();
+  for (const c of ['go to marlowe house', 'interview sir alistair', 'go to the study']) {
+    act(s, c);
+    const sg = suggest(s);
+    assert.ok(sg.length > 0);
+    assert.equal(new Set(sg).size, sg.length);
+  }
+});
+
+test('a saved game survives a JSON round trip and still reaches the same ending', () => {
+  const half = IDEAL_COMMANDS.slice(0, Math.floor(IDEAL_COMMANDS.length / 2));
+  const s1 = run(half);
+  const s2 = JSON.parse(JSON.stringify(s1));
+  const rest = IDEAL_COMMANDS.slice(half.length);
+  run(rest, s1); run(rest, s2);
+  assert.equal(weighEvidence(s2).grade, weighEvidence(s1).grade);
+  assert.equal(accuse(s2, 'pell', 'mercy').total, accuse(s1, 'pell', 'mercy').total);
 });

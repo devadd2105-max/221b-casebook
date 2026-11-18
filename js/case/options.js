@@ -12,6 +12,8 @@ const add = (o) => { OPTIONS.push({ minutes: 10, cost: 0, gives: [], flags: [], 
 // ======================================================================= WATSON
 add({ id: 'w_help', kind: 'ask', who: 'watson', topics: ['greet'], minutes: 1, text: [['Watson', 'Where would you have me begin, Holmes? Sir Alistair’s wire is on the table. The Star is gone from the safe at Marlowe House, and we have until Friday afternoon before whoever took it is beyond our reach.'], 'You may say anything you like. Go where you please, ask whom you please, examine what you please. Nothing here is a menu.'] });
 add({ id: 'w_view', kind: 'ask', who: 'watson', topics: ['character', 'theft'], minutes: 2, text: [['Watson', 'An inside affair, I should guess. Safes do not open themselves, and the note is far too polite for a common cracksman.'], ['Watson', 'But I have been wrong before. You will want facts, not my guesses.']] });
+add({ id: 'w_expert', kind: 'ask', who: 'watson', topics: ['hand'], minutes: 3, learnsP: ['finch'], learnsPl: ['finch_chambers'],
+  text: [['Watson', 'There is a man in Gray’s Inn, Finch, whom the Yard calls in when a signature is in dispute. He will not say two hands are one on a hunch; give him the note and something the suspect wrote in his own natural way, and he will tell you.']] });
 add({ id: 'w_papers_ask', kind: 'ask', who: 'watson', topics: ['police', 'servants'], minutes: 2, text: [['Watson', 'I could read you the morning papers if you like. The reputable ones will be careful; the penny sheets will tell you anything at all.']] });
 
 // ======================================================================= MRS. HUDSON

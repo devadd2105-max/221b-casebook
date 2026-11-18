@@ -272,7 +272,7 @@ export const TOPICS = {
   safe: ['safe', 'strongbox', 'strong box', 'vault'],
   note: ['note', 'regret', 'inconvenience', 'better hands', 'message left', 'calling card'],
   paper: ['paper', 'stationery', 'watermark', 'vellum', 'laid paper', 'quire', 'ream', 'writing paper', 'crown laid', 'joynson', 'whatman', 'portal', 'dickinson', 'spicer', 'cream paper', 'sold paper', 'notepaper', 'who buys', 'who bought', 'purchase of paper', 'customers'],
-  hand: ['handwriting', 'penmanship', 'copperplate', 'scrawl', 'forger', 'forgery', 'slant', 'letterform', 'script', 'disguised', 'whose hand', 'compare the writing', 'written by', 'writer of', 'the hand'],
+  hand: ['handwriting', 'penmanship', 'copperplate', 'scrawl', 'forger', 'forgery', 'slant', 'letterform', 'script', 'disguised', 'whose hand', 'compare the writing', 'written by', 'writer of', 'the hand', 'handwritings', 'writing expert', 'handwriting expert', 'same hand', 'one hand', 'signature', 'signatures', 'writings', 'calligraphy', 'graphologist', 'writing match', 'authenticate'],
   ink: ['ink', 'nib', 'blotter', 'blotting'],
   debts: ['debt', 'owe', 'owed', 'money trouble', 'loan', 'borrow', 'creditor', 'moneylender', 'usury', 'interest', 'bankrupt', 'poor', 'in need of money', 'arrears', 'fees', 'finances', 'penniless', 'in trouble', 'repay', 'repayment', 'lend', 'lent'],
   sister: ['sister', 'hannah', 'torquay', 'sanatorium', 'sanitarium', 'invalid', 'consumption', 'family', 'relation', 'ill', 'illness', 'sick'],
