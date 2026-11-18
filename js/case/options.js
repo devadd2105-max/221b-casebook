@@ -171,7 +171,7 @@ add({ id: 't_stonewall', kind: 'ask', who: 'tull', topics: [], minutes: 4, text:
 add({ id: 'pe_paper', kind: 'ask', who: 'peabody', topics: ['paper', 'greet', 'note'], minutes: 12, gives: ['paper_peabody'],
   text: [['Peabody', 'Joynson’s Crown Laid? We sell it, sir; a good cream laid, the crown is stamped in the mould. There are but five houses in London that keep it. We are the nearest to the Inns of Court.'], 'He peers at the note over his spectacles and clicks his tongue in appreciation.'] });
 add({ id: 'pe_ledger_cold', kind: 'ask', who: 'peabody', topics: ['customers', 'paper', 'letters'], minutes: 6,
-  text: [['Peabody', 'My customers are my customers, sir. I do not discuss them. Ask the Commissioner for a warrant and I shall oblige.']] });
+  text: [['Peabody', 'My customers are my customers, sir. I do not discuss them. Ask the Commissioner for a warrant and I shall oblige. If you have a particular name in mind, Mr. Holmes, I might tell you whether it is familiar. I shall not offer one.']] });
 add({ id: 'pe_ledger', kind: 'ask', who: 'peabody', topics: ['customers', 'paper', 'letters', 'note'], minutes: 18, gives: ['paper_ledger_pell'], cost: 3, learnsP: [], need: { mention: ['pell'], anyFacts: ['paper_joynson', 'paper_peabody'] },
   text: [
     'You name Mr. Pell. Mr. Peabody weighs the name, and a half-crown, and the fact that you have not asked for anything he cannot decently give.',
@@ -196,7 +196,7 @@ add({ id: 'te_pay', kind: 'ask', who: 'tench', topics: ['key', 'safe', 'duplicat
 
 // ======================================================================= CRAKE
 add({ id: 'cr_cold', kind: 'ask', who: 'crake', topics: ['debts', 'greet', 'character'], minutes: 8,
-  text: [['Crake', 'I lend to gentlemen who can bear it, Mr. Holmes. I do not discuss them. Good morning.'], 'A very quiet man, who smiles as if he has measured your pockets.'] });
+  text: [['Crake', 'I lend to gentlemen who can bear it, Mr. Holmes. I do not discuss them. Good morning. My time is dear, and my memory, I find, is dearer.'], 'A very quiet man, who smiles as if he has measured your pockets.'] });
 add({ id: 'cr_pell', kind: 'ask', who: 'crake', topics: ['debts', 'sister', 'character', 'theft'], minutes: 12, gives: ['pell_debt'], need: { mention: ['pell'], anyFacts: ['pell_dunned', 'pell_sister', 'gradwell_pell_asked', 'mary_stairs', 'tench_dup'] },
   text: [
     'You name Mr. Pell and lay what you know on the desk, quietly. Crake reads it as a man reads a rival’s balance sheet.',
@@ -208,7 +208,7 @@ add({ id: 'cr_pay', kind: 'ask', who: 'crake', topics: ['debts', 'character'], m
 
 // ======================================================================= MOSS
 add({ id: 'mo_cold', kind: 'ask', who: 'moss', topics: ['fence', 'professional', 'greet', 'theft'], minutes: 8,
-  text: [['Moss', 'I am a respectable pawnbroker, Mr. Holmes. Silver spoons and Sunday suits. Is there anything you wish to pledge?']] });
+  text: [['Moss', 'I am a respectable pawnbroker, Mr. Holmes. Silver spoons and Sunday suits. Is there anything you wish to pledge? Come back with something heavier than manners, or with a purse, and we may find I remember more.']] });
 add({ id: 'mo_stone', kind: 'ask', who: 'moss', topics: ['fence', 'theft', 'professional', 'police'], minutes: 15, gives: ['stone_moss'], flags: ['stone_found'], need: { facts: ['stone_moved'], tone: 'harsh' },
   text: [
     'You tell him quietly what Inspector Lestrade would do to his licence, and his lease, and his back room.',
@@ -220,7 +220,7 @@ add({ id: 'mo_pay', kind: 'ask', who: 'moss', topics: ['fence', 'theft', 'profes
 
 // ======================================================================= MRS. HODGE
 add({ id: 'ho_cold', kind: 'ask', who: 'hodge', topics: ['lodging', 'character', 'greet', 'theft', 'evening'], minutes: 8,
-  text: [['Mrs. Hodge', 'Mr. Pell is a very quiet gentleman and I will not have him troubled. He pays on the dot.']] });
+  text: [['Mrs. Hodge', 'Mr. Pell is a very quiet gentleman and I will not have him troubled. He pays on the dot. I answer those who come to me kindly, sir, and only those.']] });
 add({ id: 'ho_gentle', kind: 'ask', who: 'hodge', topics: ['lodging', 'character', 'greet', 'theft', 'evening', 'letters'], minutes: 12, gives: ['hodge_heavy', 'hodge_parcel'], flags: ['hodge_door'], need: { tone: 'gentle' },
   text: [
     'You are courteous, and say it is a matter in which Mr. Pell’s employer wishes to spare him embarrassment. She wavers, and gives.',
@@ -325,9 +325,9 @@ add({ id: 'x_lodge_trunk', kind: 'examine', obj: 'lodging_bed', minutes: 12, giv
 add({ id: 'x_lodge_grate', kind: 'examine', obj: 'lodging_grate', minutes: 10, need: { flags: ['hodge_door'] }, text: ['Ashes of burnt letters and a charred scrap that reads “unless the sum is”. A moneylender’s dunning letter, you think; you take the scrap.'] });
 
 // ======================================================================= EXAMINATION: PEABODY'S
-add({ id: 'x_ledger', kind: 'examine', obj: 'shop_ledger', minutes: 20, gives: ['paper_ledger_pell'], need: { mention: ['pell'], flags: ['ledger_open'] },
+add({ id: 'x_ledger', kind: 'examine', obj: 'shop_ledger', minutes: 20, gives: ['paper_ledger_pell'], need: { mention: ['pell'], anyFacts: ['paper_joynson', 'paper_peabody'] }, cost: 3,
   text: ['The ledger, read at last, shows the Pell entries monthly.'],
-  refuse: ['The ledger lies behind the counter, and Mr. Peabody has his hand upon it. You will have to talk to him first.'] });
+  refuse: ['The ledger lies behind the counter, and Mr. Peabody has his hand upon it. He will not open it for a stranger, nor for a general question. Give him a name to confirm, and a reason to believe you have been to the right shop.'] });
 
 // ======================================================================= SERVICES: THE IRREGULARS
 add({ id: 'wi_tail_pell', kind: 'service', who: 'wiggins', topics: ['tail', 'lodging'], targets: ['pell'], minutes: 5, cost: 4, delay: 240, gives: ['pell_routine'], alert: 3,

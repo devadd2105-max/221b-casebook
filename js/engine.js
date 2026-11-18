@@ -87,7 +87,7 @@ function goTo(s, placeId, out) {
 // ---------------------------------------------------------------- requirement checking
 function tonePasses(s, need, p) {
   if (need.tone === 'gentle') return p.tone.gentle && !p.tone.harsh;
-  if (need.tone === 'harsh') return p.tone.harsh || (p.tone.confront && /\b(police|inspector|lestrade|arrest|prison|gaol|jail)\b/i.test(p.raw));
+  if (need.tone === 'harsh') return p.tone.harsh || p.tone.confront;
   if (need.tone === 'confront') return p.tone.confront || p.tone.harsh || Object.keys(p.topics).length >= 2;
   return true;
 }
@@ -368,7 +368,8 @@ function actOne(s, text, out) {
 
 
   // --- accusing
-  if (I.ACCUSE && (found.person.length || /\b(accuse|name the (thief|culprit)|culprit|solved|my solution|final answer|close the case)\b/i.test(text))) {
+  const questioning = /\b(ask|asks|question|interview|interrogate|talk to|speak to|speak with|what does .* know|tell me about|regarding|wire|telegraph)\b/i.test(text) && !/\b(accuse|culprit|my solution|final answer)\b/i.test(text);
+  if (I.ACCUSE && !questioning && (found.person.length || /\b(accuse|name the (thief|culprit)|culprit|solved|my solution|final answer|close the case)\b/i.test(text))) {
     const suspect = found.person.find((e) => e.id !== 'watson' && e.id !== 'hudson')?.id ?? null;
     out.push(narr('You rise. It is time to say it aloud.'));
     return { ui: { open: 'accuse', suspect } };
@@ -391,7 +392,7 @@ function actOne(s, text, out) {
   if (s.awaitPapers && !found.person.some((e) => !['watson', 'hudson'].includes(e.id)) && !found.paper.length && !I.GO && !found.place.length && (/\b(all|every|each|the lot|everything|whole|both|any|whichever|you choose|your choice|surprise me|do it|do so|go ahead|go on|carry on|just|please|sure|yes|yeah|okay|ok|fine)\b/i.test(text) || (!I.ASK && !I.EXAMINE && !I.WAIT && !I.THINK))) {
     readPapers(s, [...PAPER_ORDER], out); return;
   }
-  const wantsPapers = found.paper.length || /\b(pass me|hand me|give me|fetch|bring)\b[^.]*\b(papers?|newspapers?)\b/i.test(text) || /\b(newspaper|newspapers|headline|headlines|the news|morning papers|the papers|dailies)\b/i.test(text) || (I.READ_PAPERS && /\bread\b/i.test(text) && !/\b(note|specimen|watermark|stationer|quire|letter|ledger|copy.?book|sample)\b/i.test(text) && !found.object.length);
+  const wantsPapers = !((found.object.length || (parentPlace(s.place) !== 'baker_street' && /\b(examine|inspect|search|check|look (at|through)|go through|rummage)\b/i.test(text) && !/\b(news|newspaper|newspapers|times|telegraph|gazette|morning papers)\b/i.test(text))) && parentPlace(s.place) !== 'baker_street') && (found.paper.length || /\b(pass me|hand me|give me|fetch|bring)\b[^.]*\b(papers?|newspapers?)\b/i.test(text) || /\b(newspaper|newspapers|headline|headlines|the news|morning papers|the papers|dailies)\b/i.test(text) || (I.READ_PAPERS && /\bread\b/i.test(text) && !/\b(note|specimen|watermark|stationer|quire|letter|ledger|copy.?book|sample)\b/i.test(text) && !found.object.length));
   if (wantsPapers && !otherPerson) {
     let ids = found.paper.map((e) => e.id);
     if (/\ball\b|\bevery\b|\beach\b|\bthe lot\b/i.test(text)) ids = [...PAPER_ORDER];
@@ -415,7 +416,9 @@ function actOne(s, text, out) {
   const placeE = found.place.find((e) => !e.weak) || found.place[0];
   const goVerb = I.GO && !I.ASK;
   const wireVerb = I.WIRE;
-  const sendVerb = (I.SEND || I.TAIL) && (found.person.some((e) => e.id === 'wiggins') || /boys|irregulars|urchins|lads/i.test(text) || I.TAIL);
+  const wigginsNamed = found.person.some((e) => e.id === 'wiggins') || /\b(boys|irregulars|urchins|lads)\b/i.test(text);
+  const tailsSomeone = I.TAIL && found.person.some((e) => !['watson', 'hudson', 'wiggins'].includes(e.id)) && !I.EXAMINE;
+  const sendVerb = (I.SEND || I.TAIL || wigginsNamed) && !(I.ASK && !wigginsNamed) && (wigginsNamed || tailsSomeone);
   const personE = found.person.find((e) => !['watson', 'hudson'].includes(e.id)) || found.person.find((e) => e.id === 'watson' || e.id === 'hudson');
 
   if (sendVerb) { return service(s, p, out); }
@@ -423,6 +426,7 @@ function actOne(s, text, out) {
   if (wireVerb && personE && ['watson', 'hudson'].includes(personE.id) && peopleHere(s).includes(personE.id)) { return askPerson(s, p, personE.id, out, {}); }
   if (wireVerb && personE && !PEOPLE[personE.id].remote) { out.push(narr('A telegram will not do for that. You will have to see him.')); return; }
 
+  if (placeE && placeE.id === s.place && !goVerb && !personE && !found.object.length && !I.WAIT && !I.ASK) { return searchRoom(s, p, out); }
   if (placeE && (goVerb || (!personE && !found.object.length && !I.EXAMINE && !I.WAIT)) && !I.ASK) {
     const id = placeE.id;
     if (!knowsPlace(s, id)) { out.push(narr(`You have no good reason to go to ${PLACES[id].short} yet.`)); return; }

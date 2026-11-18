@@ -1,5 +1,5 @@
 // Turns whatever Holmes types into a structured reading: intents, entities, topics, tone.
-import { tokens, findPhrase, hasAny, countAny, norm } from './text.js';
+import { tokens, findPhrase, hasAny, countAny, norm, stem } from './text.js';
 import { PEOPLE, PLACES, OBJECTS, PAPERS, MAKERS, TOPICS, TONE_GENTLE, TONE_HARSH, TONE_CONFRONT, TONE_PAY } from './case/world.js';
 
 const INTENT_WORDS = {
@@ -32,7 +32,7 @@ for (const [id, p] of Object.entries(PEOPLE)) reg(PERSON_PHRASES, id, p.names, '
 for (const [id, p] of Object.entries(PLACES)) reg(PLACE_PHRASES, id, p.names, 'place');
 for (const [id, o] of Object.entries(OBJECTS)) reg(OBJECT_PHRASES, id, o.names, 'object');
 const objAlts = {};
-for (const [id, o] of Object.entries(OBJECTS)) for (const n of o.names) (objAlts[n] ||= []).push(id);
+for (const [id, o] of Object.entries(OBJECTS)) for (const n of o.names) for (const k of new Set([n, n.replace(/^the /, ''), 'the ' + n.replace(/^the /, '')].flatMap((x) => [x, x.split(' ').map((w) => stem(w)).join(' ')]))) { objAlts[k] ||= []; if (!objAlts[k].includes(id)) objAlts[k].push(id); }
 for (const [id, p] of Object.entries(PAPERS)) reg(PAPER_PHRASES, id, p.names, 'paper');
 for (const [id, m] of Object.entries(MAKERS)) reg(MAKER_PHRASES, id, [m.name, m.name + ' paper', m.line], 'maker');
 // longest phrases first, so "sir alistair" beats "sir" and "diogenes club" beats "club"

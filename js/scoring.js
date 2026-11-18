@@ -34,8 +34,9 @@ export function accuse(s, suspect, verdict = null) {
   }
   r.kind = s.fled ? 'fled' : 'solved';
   const evPts = { airtight: 350, sound: 250, thin: 100, flimsy: 20, none: 0 }[ev.grade];
-  const speed = Math.round(200 * Math.max(0, 1 - used / budget) ** 0.8);
-  const economy = Math.max(0, Math.round(100 - s.stats.spent * 0.9 - Math.min(30, s.hints * 5)));
+  const fac = { airtight: 1, sound: 0.85, thin: 0.5, flimsy: 0.25, none: 0.1 }[ev.grade];   // a lucky guess earns little for being quick
+  const speed = Math.round(fac * 200 * Math.max(0, 1 - used / budget) ** 0.8);
+  const economy = Math.round(fac * Math.max(0, Math.round(100 - s.stats.spent * 0.9 - Math.min(30, s.hints * 5))));
   const insight = Math.min(150, contradictions.length * 30);
   const recovered = hasFlag(s, 'stone_found');
   const recovery = recovered ? 100 : 0;
@@ -44,6 +45,7 @@ export function accuse(s, suspect, verdict = null) {
   if (r.kind === 'fled') { verdictPts = 0; vnote = 'He was beyond your reach before you named him.'; }
   else if (verdict === 'mercy') { verdictPts = informed ? 90 : 50; vnote = informed ? 'A mercy given knowing what drove him to it.' : 'A mercy given without knowing the reasons for it.'; }
   else if (verdict === 'prosecute') { verdictPts = 70; vnote = 'The law takes its course.'; }
+  verdictPts = Math.round(verdictPts * (ev.grade === 'airtight' || ev.grade === 'sound' ? 1 : fac + 0.25));
   r.parts.push({ label: 'Evidence', pts: evPts, max: 350, note: `Your case was ${ev.grade}.` });
   r.parts.push({ label: 'Speed', pts: speed, max: 200, note: `Solved in ${formatSpan(used)} of the ${formatSpan(budget)} allowed.` });
   r.parts.push({ label: 'Economy', pts: economy, max: 100, note: `You spent ${s.stats.spent}s${s.hints ? ` and asked Watson for ${s.hints} nudge${s.hints > 1 ? 's' : ''}` : ''}.` });
