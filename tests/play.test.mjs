@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { newGame, hasFact, hasFlag } from '../js/state.js';
-import { act, suggest } from '../js/engine.js';
+import { act, suggest, paperSheets } from '../js/engine.js';
 import { IDEAL_COMMANDS, accuse } from '../js/scoring.js';
 import { weighEvidence } from '../js/evidence.js';
 import { parse } from '../js/parser.js';
@@ -153,4 +153,19 @@ test('a saved game survives a JSON round trip and still reaches the same ending'
   run(rest, s1); run(rest, s2);
   assert.equal(weighEvidence(s2).grade, weighEvidence(s1).grade);
   assert.equal(accuse(s2, 'pell', 'mercy').total, accuse(s1, 'pell', 'mercy').total);
+});
+
+test('papers are passed over, shown in a reader, and Watson can give the gist', () => {
+  const s = newGame();
+  let r = act(s, 'ask watson to read the papers');
+  assert.ok(s.awaitPapers);
+  r = act(s, "all of them, let's hear the facts on the case");
+  assert.equal(r.ui.open, 'papers');
+  assert.equal(r.ui.ids.length, 6);
+  const sheets = paperSheets(s, r.ui.ids);
+  assert.ok(sheets.every((x) => x.name && x.date));
+  r = act(s, 'give me the summary');
+  assert.ok(r.out.length > 5);
+  r = act(s, 'read the times');
+  assert.equal(r.ui.open, 'papers');
 });

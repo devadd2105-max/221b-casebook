@@ -205,3 +205,20 @@ h1 { margin: 6px 0 12px; font-weight: 400; font-size: clamp(42px, 8vw, 78px); co
   .suspects { grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .sus { padding: 2px; font-size: 12px; }
 }
+
+/* the newspaper reader */
+.sheet.news { max-width: min(980px, 96vw); background: #1b130c; }
+.newsbar { display: flex; gap: 6px; flex-wrap: wrap; padding-right: 44px; margin-bottom: 10px; }
+.newsbar button { background: #2a1c10; color: var(--parch2); border: 1px solid #5a4a2a; padding: 5px 12px; border-radius: 4px 4px 0 0; font-size: 14px; }
+.newsbar button[aria-selected="true"] { background: #e8dcc0; color: #1d160e; border-color: #e8dcc0; }
+.newsprint { background: #e8dcc0 radial-gradient(ellipse at 50% 0, #f3e9cf, #e0d2b0 80%); color: #1d160e; padding: 20px clamp(16px, 4vw, 40px) 18px; border-radius: 2px; box-shadow: inset 0 0 60px #7a5a2a55, 0 4px 18px #000a; max-height: 56vh; overflow-y: auto; font-family: 'IM Fell English', Georgia, serif; }
+.newsprint .masthead { font-size: clamp(30px, 6vw, 56px); text-align: center; margin: 0; letter-spacing: .02em; font-weight: 400; border-bottom: 3px double #1d160e; padding-bottom: 6px; color: #1d160e; }
+.newsprint .dateline { display: flex; justify-content: space-between; font-size: 13px; font-style: italic; border-bottom: 1px solid #1d160e; padding: 4px 0; margin-bottom: 12px; }
+.newsprint .headline { font-size: clamp(20px, 3.4vw, 30px); line-height: 1.15; margin: 4px 0 12px; text-align: center; font-weight: 700; color: #1d160e; }
+.newsprint .cols.long { column-count: 2; }
+.newsprint .cols { column-gap: 28px; column-rule: 1px solid #1d160e55; text-align: justify; hyphens: auto; font-size: clamp(16px, 2.2vw, 20px); line-height: 1.5; }
+.newsprint .cols p { margin: 0 0 .8em; }
+.newsprint .cols p:first-child::first-letter { float: left; font-size: 3.2em; line-height: .82; padding: 4px 6px 0 0; font-weight: 700; }
+.newsprint .margin { font-style: italic; font-size: 15px; border-top: 1px dotted #1d160e88; margin: 12px 0 0; padding-top: 8px; color: #3a2b18; }
+.newsprint .trust { font-size: 13px; color: #4a3a22; margin: 10px 0 0; }
+@media (max-width: 700px) { .newsprint .cols.long { column-count: 1; } .newsprint { max-height: 60vh; } }

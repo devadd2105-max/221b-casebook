@@ -106,6 +106,9 @@ export function parse(text, ctx = {}) {
 export function parseTime(raw, toks) {
   const s = raw.toLowerCase();
   let m;
+  const WD = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  if ((m = s.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/)) && /\b(until|till|til|for|to|next|on|wait|sleep|rest)\b/.test(s)) return { untilDay: WD.indexOf(m[1]), until: 9 * 60 };
+  if ((m = s.match(/(\d+|a|one|two|three|four)\s+days?\b/))) { const n = { a: 1, one: 1, two: 2, three: 3, four: 4 }[m[1]] || parseInt(m[1], 10); return { duration: Math.min(n, 5) * 1440 }; }
   if ((m = s.match(/(?:until|till|til|by|at|till)\s+(\d{1,2})(?:[:.](\d{2}))?\s*(am|a\.m\.|pm|p\.m\.)?/))) {
     let h = parseInt(m[1], 10); const min = m[2] ? parseInt(m[2], 10) : 0;
     const ap = m[3] || '';

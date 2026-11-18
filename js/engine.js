@@ -7,7 +7,7 @@ import { OPTIONS } from './case/options.js';
 import { PAPER_EDITIONS, PAPER_PROFILE } from './case/papers.js';
 import { weighEvidence, atLeast } from './evidence.js';
 import { hasFact, hasFlag, learnFact, learnPerson, learnPlace, knowsPerson, knowsPlace, spend, advance, whereIs, placeClosed, timeLeft, deadlineNow } from './state.js';
-import { clockText, shortClock, dayOf, hourOf, money } from './clock.js';
+import { clockText, shortClock, dayOf, DAY_NAMES, hourOf, money } from './clock.js';
 const isSundayAt = (t) => dayOf(t) % 7 === 0;
 
 const say = (who, text) => ({ k: 'say', who, text });
@@ -191,22 +191,61 @@ function checkNerves(s, out) {
 }
 
 // ---------------------------------------------------------------- papers
+function editionFor(s, id) {
+  const eds = PAPER_EDITIONS[id];
+  return [...eds].reverse().find((e) => s.t >= e.from) || eds[0];
+}
+
+// What the reader sees for each paper: masthead, date, a headline and the column itself.
+export function paperSheets(s, ids) {
+  return ids.map((id) => {
+    const ed = editionFor(s, id);
+    const day = s.t < 1440 ? 6 : dayOf(s.t);
+    const dateNo = s.t < 1440 ? 11 : 12 + dayOf(s.t);
+    const date = `${DAY_NAMES[day % 7]} ${dateNo} October 1890`;
+    const articles = []; const notes = [];
+    for (const l of ed.lines) {
+      if (Array.isArray(l)) articles.push(String(l[1]).replace(/^[“"]|[”"]$/g, ''));
+      else notes.push(l);
+    }
+    let headline = ''; let body = articles;
+    if (articles.length) {
+      const m = articles[0].match(/^(.{12,110}?[!.?])\s+([\s\S]*)$/);
+      if (m) { headline = m[1]; body = [m[2], ...articles.slice(1)]; }
+    } else headline = 'Nothing on the matter in hand';
+    return { id, name: PAPERS[id].name, date, reliability: PAPER_PROFILE[id].reliability, headline, body, notes };
+  });
+}
+
 function readPapers(s, ids, out) {
   if (!ids.length) {
-    out.push(say('Watson', 'Which paper shall I read, Holmes? We have the Times, the Telegraph, the Morning Post, the Pall Mall Gazette, the City Press and, I regret to say, the Illustrated Police News. Choose one, or several, or all of them.'));
-    out.push({ k: 'suggest', items: PAPER_ORDER.map((id) => `Ask Watson to read ${PAPERS[id].name}`) });
+    s.awaitPapers = true;
+    out.push(say('Watson', 'Which paper shall I fetch, Holmes? We have the Times, the Telegraph, the Morning Post, the Pall Mall Gazette, the City Press and, I regret to say, the Illustrated Police News. Choose one, or several, or all of them.'));
+    out.push({ k: 'suggest', items: ['All of them', ...PAPER_ORDER.map((id) => PAPERS[id].name)] });
     return;
   }
+  s.awaitPapers = false;
+  const names = ids.map((id) => PAPERS[id].name);
+  out.push(say('Watson', ids.length === 1 ? `Here you are, Holmes: ${names[0]}. Read it yourself, or say the word and I shall give you the gist.` : `Here, Holmes, I have laid out ${names.length === PAPER_ORDER.length ? 'every one of them' : names.join(', ').replace(/, ([^,]*)$/, ' and $1')}. Read them yourselves, or say the word and I shall give you the gist.`));
   for (const id of ids) {
-    const eds = PAPER_EDITIONS[id];
-    const ed = [...eds].reverse().find((e) => s.t >= e.from) || eds[0];
-    const prof = PAPER_PROFILE[id];
-    out.push(sys(`${PAPERS[id].name}: ${prof.reliability}.`));
-    for (const l of ed.lines) out.push(lineFrom(l));
+    const ed = editionFor(s, id);
     for (const f of ed.gives) if (learnFact(s, f, 'paper:' + id)) out.push(learnLine(f));
     if (!s.papersRead.includes(id)) s.papersRead.push(id);
     const { arrived } = advance(s, 10);
     deliver(s, arrived, out);
+  }
+  s.lastPapers = ids;
+  s.uiNext = { open: 'papers', ids };
+}
+
+// Watson reads the column aloud, when Holmes would rather listen
+function papersGist(s, out) {
+  const ids = (s.lastPapers && s.lastPapers.length) ? s.lastPapers : [];
+  if (!ids.length) { out.push(say('Watson', 'We have not looked at a paper yet. Which would you like?')); s.awaitPapers = true; return; }
+  for (const id of ids) {
+    const ed = editionFor(s, id);
+    out.push(sys(`${PAPERS[id].name}: ${PAPER_PROFILE[id].reliability}.`));
+    for (const l of ed.lines) out.push(lineFrom(l));
   }
 }
 
@@ -285,6 +324,7 @@ export function act(s, text) {
     if (ui?.open === 'accuse') break;
     if (s.ended) break;
   }
+  if (s.uiNext) { ui = s.uiNext; delete s.uiNext; }
   checkNerves(s, out);
   checkDeadline(s, out);
   s.log.push({ t: s.t, kind: 'input', text });
@@ -310,10 +350,10 @@ function actOne(s, text, out) {
     if (/\b(map|london)\b/i.test(text) && /\b(show|open|see|look|view|check|where)\b/i.test(text)) return { ui: { open: 'map' } };
     if (/\b(casebook|notes|notebook|my notes|evidence|clues)\b/i.test(text)) return { ui: { open: 'casebook' } };
     if (/\b(money|purse|cash|funds|shillings|afford)\b/i.test(text) && /\b(how|what|check|much|have|left)\b/i.test(text)) {
-      out.push(sys(`Your purse holds ${money(s.purse)}. It is ${clockText(s.t)}.`)); return;
+      out.push(sys(`Your purse holds ${money(s.purse)}. It is ${clockText(s.t)}`.replace(/\.?$/, '.'))); return;
     }
     if (/\b(what('?s| is) the (time|date|day)|what time|what day|the time)\b/i.test(text)) {
-      out.push(sys(`It is ${clockText(s.t)}. You have until ${clockText(deadlineNow(s))}.`)); return;
+      out.push(sys(`It is ${clockText(s.t)} You have until ${clockText(deadlineNow(s))}`.replace(/\.?$/, '.').replace(/\.\s+You/, '. You'))); return;
     }
     if (/^\s*(go back|back|return|return to where i was|go to where i was)\s*$/i.test(text) && s.prevPlace && s.prevPlace !== s.place) { goTo(s, s.prevPlace, out); return; }
     if (/^\s*(leave|exit|go out|step outside|go outside)\s*$/i.test(text)) {
@@ -343,10 +383,16 @@ function actOne(s, text, out) {
   const otherPerson = found.person.find((e) => !['watson', 'hudson'].includes(e.id));
 
   // --- papers
-  const wantsPapers = found.paper.length || /\b(newspaper|newspapers|headline|headlines|the news|morning papers|the papers|dailies)\b/i.test(text) || (I.READ_PAPERS && /\bread\b/i.test(text) && !/\b(note|specimen|watermark|stationer|quire|letter|ledger|copy.?book|sample)\b/i.test(text) && !found.object.length);
+  if (s.lastPapers?.length && !found.person.some((e) => !['watson', 'hudson'].includes(e.id)) && /\b(summar|gist|read (it|them|that) (to me|aloud|out)|tell me what (it|they) say|what (does|do) (it|they|the papers?|the newspapers?) say|give me the (gist|summary|headlines)|the facts|brief me|in short|sum (it|them) up)/i.test(text) && !found.paper.length) {
+    papersGist(s, out); return;
+  }
+  if (s.awaitPapers && !found.person.some((e) => !['watson', 'hudson'].includes(e.id)) && !found.paper.length && /\b(all|every|each|the lot|everything|whole|both|any)\b/i.test(text) && !I.GO) {
+    readPapers(s, [...PAPER_ORDER], out); return;
+  }
+  const wantsPapers = found.paper.length || /\b(pass me|hand me|give me|fetch|bring)\b[^.]*\b(papers?|newspapers?)\b/i.test(text) || /\b(newspaper|newspapers|headline|headlines|the news|morning papers|the papers|dailies)\b/i.test(text) || (I.READ_PAPERS && /\bread\b/i.test(text) && !/\b(note|specimen|watermark|stationer|quire|letter|ledger|copy.?book|sample)\b/i.test(text) && !found.object.length);
   if (wantsPapers && !otherPerson) {
     let ids = found.paper.map((e) => e.id);
-    if (/\ball\b|\bevery\b|\beach\b/i.test(text)) ids = [...PAPER_ORDER];
+    if (/\ball\b|\bevery\b|\beach\b|\bthe lot\b/i.test(text)) ids = [...PAPER_ORDER];
     readPapers(s, [...new Set(ids)], out);
     return;
   }
@@ -602,13 +648,18 @@ function service(s, p, out) {
 function waitFor(s, p, out) {
   const tm = p.time;
   let mins = 60;
-  if (tm?.duration) mins = tm.duration;
+  let cap = 16 * 60;
+  if (tm?.untilDay != null) {
+    const target = tm.untilDay * 1440 + tm.until;
+    if (target <= s.t) { out.push(narr('That day is already here, or past. Say what you would do with it.')); return; }
+    mins = target - s.t; cap = 6 * 1440;
+  } else if (tm?.duration) { mins = tm.duration; if (mins > cap) cap = mins; }
   else if (tm?.until != null) {
     let target = dayOf(s.t) * 1440 + tm.until;
     if (tm.nextDay || target <= s.t) target += 1440;
     mins = target - s.t;
   }
-  mins = Math.max(5, Math.min(mins, 16 * 60));
+  mins = Math.max(5, Math.min(mins, cap));
   const { arrived, slept } = advance(s, mins);
   out.push(narr(mins >= 480 ? 'You sleep, and take the day as it comes.' : mins >= 120 ? 'The hours go by with the fog.' : 'You wait.'));
   deliver(s, arrived, out);

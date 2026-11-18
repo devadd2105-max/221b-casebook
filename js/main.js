@@ -1,6 +1,6 @@
 // The controller: wires the engine to the page.
 import { newGame, load, save, wipe, timeLeft, deadlineNow, hasFact, hasFlag } from './state.js';
-import { act, suggest, compareMaker, peopleHere } from './engine.js';
+import { act, suggest, compareMaker, peopleHere, paperSheets } from './engine.js';
 import { FACTS, CONTRADICTIONS } from './case/facts.js';
 import { PEOPLE, PLACES, MAKERS, MAKER_ORDER, parentPlace } from './case/world.js';
 import { weighEvidence } from './evidence.js';
@@ -179,6 +179,28 @@ function openUI(ui) {
   else if (ui.open === 'accuse') openAccuse(ui.suspect);
   else if (ui.open === 'casebook') openCasebook();
   else if (ui.open === 'map') openMap();
+  else if (ui.open === 'papers') openPapers(ui.ids);
+}
+
+function openPapers(ids, pick = 0) {
+  const sheets = paperSheets(S, ids);
+  const esc = (x) => String(x).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const sh = sheets[pick] || sheets[0];
+  const html = `<button class="close" aria-label="Close">×</button>
+  <div class="newsbar" role="tablist">${sheets.map((x, i) => `<button role="tab" data-i="${i}" aria-selected="${i === pick}">${esc(x.name.replace(/^The /, ''))}</button>`).join('')}</div>
+  <article class="newsprint">
+    <h2 class="masthead">${esc(sh.name)}</h2>
+    <div class="dateline"><span>${esc(sh.date)}</span><span>Price One Penny</span></div>
+    <h3 class="headline">${esc(sh.headline || 'The latest intelligence')}</h3>
+    <div class="cols ${sh.body.join('').length > 700 ? 'long' : ''}">${sh.body.map((b) => `<p>${esc(b)}</p>`).join('') || ''}</div>
+    ${sh.notes.map((n) => `<p class="margin">${esc(n)}</p>`).join('')}
+    <p class="trust">Holmes’s estimate of this paper: ${esc(sh.reliability)}.</p>
+  </article>
+  <div class="row-btns"><button class="btn primary" id="np-gist">Ask Watson for the gist</button><button class="btn" id="np-done">Done reading</button></div>`;
+  openOverlay(html, 'news');
+  document.querySelectorAll('.newsbar button').forEach((b) => b.addEventListener('click', () => openPapers(ids, +b.dataset.i)));
+  $('#np-done').addEventListener('click', closeOverlay);
+  $('#np-gist').addEventListener('click', () => { closeOverlay(); submit('Watson, give me the gist of the papers'); });
 }
 
 const GROUPS = [
