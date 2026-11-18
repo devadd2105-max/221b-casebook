@@ -386,6 +386,13 @@ function actOne(s, text, out) {
   const otherPerson = found.person.find((e) => !['watson', 'hudson'].includes(e.id));
 
   // --- papers
+  // cold request for a summary before any paper has been fetched: lay them all out, then summarise
+  if (!s.lastPapers?.length && parentPlace(s.place) === 'baker_street' && !found.person.some((e) => !['watson', 'hudson'].includes(e.id)) && !found.paper.length && /\b(summar|gist|brief me|sum (it|them) up|headlines)/i.test(text) && /\b(papers?|newspapers?|news|dailies)\b/i.test(text)) {
+    readPapers(s, [...PAPER_ORDER], out); papersGist(s, out); return;
+  }
+  if (!s.lastPapers?.length && !s.awaitPapers && parentPlace(s.place) === 'baker_street' && !otherPerson && /\b(any|what'?s the|what is the|the latest|today'?s|this morning'?s|morning) news\b|\bwhat (do|does) the (papers?|newspapers?) (say|report)\b/i.test(text)) {
+    readPapers(s, [], out); return;
+  }
   if (s.lastPapers?.length && !found.person.some((e) => !['watson', 'hudson'].includes(e.id)) && /\b(summar|gist|read (it|them|that) (to me|aloud|out)|tell me what (it|they) say|what (does|do) (it|they|the papers?|the newspapers?) say|give me the (gist|summary|headlines)|the facts|brief me|in short|sum (it|them) up)/i.test(text) && !found.paper.length) {
     papersGist(s, out); return;
   }
