@@ -1,0 +1,33 @@
+/* animation + hotspot styling for the SVG scenes */
+.scene { width: 100%; height: 100%; display: block; }
+.rain { stroke: #b9c9d8; stroke-width: 1.2; opacity: .55; animation: rainfall linear infinite; }
+@keyframes rainfall { from { transform: translate(0,-30px); opacity: 0; } 15% { opacity: .6; } to { transform: translate(-10px,120px); opacity: 0; } }
+.flame { transform-box: fill-box; transform-origin: 50% 100%; animation: flick 1.1s ease-in-out infinite alternate; }
+.flame.f2 { animation-duration: .85s; animation-delay: -.3s; }
+.flame.f3 { animation-duration: .65s; animation-delay: -.5s; }
+@keyframes flick { 0% { transform: scale(1,1) skewX(-2deg); } 50% { transform: scale(.94,1.08) skewX(3deg); } 100% { transform: scale(1.04,.96) skewX(-3deg); } }
+.firepulse { animation: fp 2.6s ease-in-out infinite alternate; }
+@keyframes fp { from { opacity: .35; } to { opacity: .62; } }
+.gaspulse { animation: gp 4s ease-in-out infinite alternate; }
+@keyframes gp { from { opacity: .8; } to { opacity: 1; } }
+.embers circle { animation: ember 1.7s ease-in-out infinite alternate; }
+.embers circle:nth-child(2n) { animation-delay: -.8s; }
+@keyframes ember { from { opacity: .35; } to { opacity: 1; } }
+.mote { fill: #ffe6b0; opacity: .5; animation: drift linear infinite; }
+@keyframes drift { 0% { transform: translate(0,0); opacity: 0; } 20% { opacity: .55; } 100% { transform: translate(40px,-80px); opacity: 0; } }
+.smoke { animation: smk 5s ease-in-out infinite; transform-box: fill-box; }
+@keyframes smk { 0% { opacity: 0; transform: translateY(8px); } 50% { opacity: .6; } 100% { opacity: 0; transform: translateY(-22px); } }
+.fogband { animation: fogdrift 40s ease-in-out infinite alternate; }
+.fogdrift { animation: fogdrift 30s ease-in-out infinite alternate; }
+@keyframes fogdrift { from { transform: translateX(-40px); } to { transform: translateX(60px); } }
+.paper-sway { transform-box: fill-box; transform-origin: 50% 100%; animation: sway 7s ease-in-out infinite alternate; }
+@keyframes sway { from { transform: rotate(-.8deg); } to { transform: rotate(.9deg); } }
+.watson { animation: breathe 5s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes breathe { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+
+.hot { cursor: pointer; outline: none; }
+.hot-r { fill: rgba(255,214,140,0); stroke: rgba(255,214,140,0); stroke-width: 2; transition: fill .2s, stroke .2s; }
+.hot:hover .hot-r, .hot:focus-visible .hot-r { fill: rgba(255,214,140,.10); stroke: rgba(255,214,140,.7); }
+.hot-t { font: 600 22px "IM Fell English", Georgia, serif; fill: #ffe9b8; opacity: 0; paint-order: stroke; stroke: #1a0e06; stroke-width: 5px; transition: opacity .2s; pointer-events: none; font-style: italic; }
+.hot:hover .hot-t, .hot:focus-visible .hot-t { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .rain,.flame,.firepulse,.gaspulse,.mote,.smoke,.fogband,.fogdrift,.paper-sway,.watson,.embers circle { animation: none !important; } }

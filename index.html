@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>221B: The Adventure of the Marlowe Star</title>
+<meta name="description" content="A free-form detective game. You are Sherlock Holmes, 1890. Type anything. Go anywhere. Solve the theft of the Marlowe Star.">
+<meta name="theme-color" content="#12100e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Special+Elite&family=Homemade+Apple&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/scene.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2312100e'/%3E%3Ccircle cx='27' cy='27' r='13' fill='none' stroke='%23c9a24a' stroke-width='5'/%3E%3Cpath d='M37 37l15 15' stroke='%23c9a24a' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div id="app" class="hidden">
+  <div id="stage" aria-live="off"></div>
+  <header id="hud">
+    <div class="hud-l"><div id="clock"></div><div id="where"></div></div>
+    <div class="hud-r">
+      <div class="hud-item" title="Time until the quarry leaves England"><span class="k">Quarry sails</span><span id="deadline"></span></div>
+      <div class="hud-item" title="Your purse"><span class="k">Purse</span><span id="purse"></span></div>
+      <div class="hud-item" title="How alarmed the guilty party is"><span class="k">Wariness</span><span id="alert"><i></i></span></div>
+    </div>
+  </header>
+  <nav id="tools" aria-label="Tools">
+    <button data-open="casebook" title="The casebook">Casebook</button>
+    <button data-open="map" title="Map of London">Map</button>
+    <button data-open="menu" title="Menu">Menu</button>
+  </nav>
+  <aside id="portrait" class="hidden" aria-live="polite"></aside>
+  <section id="dock">
+    <div id="log" role="log" aria-live="polite"></div>
+    <div id="chips"></div>
+    <form id="cmd" autocomplete="off">
+      <label for="in">Holmes</label>
+      <input id="in" type="text" maxlength="400" placeholder="Say or do anything: &ldquo;ask Mary what she saw on the back stairs&rdquo;" enterkeyhint="send" autocapitalize="sentences" spellcheck="false">
+      <button type="submit" aria-label="Do it">Do</button>
+    </form>
+  </section>
+  <div id="overlay" class="hidden" role="dialog" aria-modal="true"></div>
+  <div id="toast" class="hidden"></div>
+</div>
+
+<div id="title">
+  <div id="title-art"></div>
+  <div class="title-card">
+    <p class="kicker">A case for Sherlock Holmes</p>
+    <h1>The Marlowe Star</h1>
+    <p class="sub">Baker Street, October 1890. A blue-white diamond is gone from a locked safe, and the thief has left a polite note. There are no menus. Type anything you like.</p>
+    <div class="title-btns"><button id="btn-new" class="primary">Take the case</button><button id="btn-continue" class="hidden">Continue the case</button><button id="btn-how">How to play</button></div>
+    <div class="locked" aria-label="More case files">
+      <div class="locked-h">The casebook, as it stands</div>
+      <div class="lock-row">
+        <div class="lock open"><b>I</b><span>The Marlowe Star</span><i>Open</i></div>
+        <div class="lock"><b>II</b><span>The Gasfitter&rsquo;s Alibi</span><i>Sealed</i></div>
+        <div class="lock"><b>III</b><span>The Silent Footman</span><i>Sealed</i></div>
+        <div class="lock"><b>IV</b><span>A Study in Tallow</span><i>Sealed</i></div>
+        <div class="lock more"><b>&hellip;</b><span>Fifty case files in time</span><i></i></div>
+      </div>
+    </div>
+  </div>
+</div>
+<noscript><p style="color:#eee;padding:2rem">This game needs JavaScript.</p></noscript>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
