@@ -180,3 +180,9 @@ test('after Watson asks which paper, the suggestions offer the papers', () => {
   act(s, chips[0]);
   assert.notEqual(suggest(s)[0], 'All of them');
 });
+
+test('asking for the papers away from Baker Street gets a useful answer', () => {
+  const s = newGame(); act(s, 'go to marlowe house');
+  const r = act(s, 'Watson, read the papers');
+  assert.match(JSON.stringify(r.out), /back at Baker Street/);
+});

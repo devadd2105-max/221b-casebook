@@ -347,6 +347,9 @@ function actOne(s, text, out) {
   const I = p.intents;
   const found = p.found;
 
+  if (parentPlace(s.place) !== 'baker_street' && !found.person.some((e) => !['watson', 'hudson'].includes(e.id)) && !found.paper.length && !/\b(examine|inspect|search|check|look (at|through)|rummage|desk|note|letter|ledger)\b/i.test(text) && /\b(papers?|newspapers?|the news|headlines|morning papers)\b/i.test(text) && /\b(read|pass|hand|fetch|bring|gist|summar|give me|show me|what do|any news)/i.test(text)) {
+    out.push(say('Watson', 'The papers are all back at Baker Street, Holmes. Shall we return there, or is it the case you want to press on with?')); return;
+  }
   // --- everyday utility commands
   if (!found.person.length && !found.object.length && !found.place.length) {
     if (/\b(map|london)\b/i.test(text) && /\b(show|open|see|look|view|check|where)\b/i.test(text)) return { ui: { open: 'map' } };
