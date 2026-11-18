@@ -614,6 +614,7 @@ function examine(s, p, out) {
     return;
   }
   const blocked = cands.map((o) => ({ o, st: needStatus(s, o, p) })).sort((a, b) => a.st.miss.length - b.st.miss.length)[0];
+  if (blocked.o.gives?.length && blocked.o.gives.every((f) => hasFact(s, f))) { out.push(narr('You have already learned what this has to tell you.')); advance(s, 2); return; }
   for (const l of blocked.o.refuse || ['You cannot do that yet.']) out.push(lineFrom(l));
   advance(s, 3);
 }
@@ -713,6 +714,7 @@ export function suggest(s) {
   for (const id of s.known.people) {
     if (['watson', 'hudson'].includes(id) || here.includes(id) || asked(id)) continue;
     const per = PEOPLE[id]; if (!per) continue;
+    if (id === 'wiggins') { if (s.known.people.includes('pell') && !s.done.wi_tail_pell) out.push('Send the Irregulars to follow Pell'); continue; }
     out.push(per.remote ? `Wire ${per.short}` : `Question ${per.short}`);
   }
   // places you know of but have never been to

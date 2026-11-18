@@ -68,10 +68,10 @@ button { font-family: var(--serif); cursor: pointer; }
 #cmd button { background: linear-gradient(#7d1f25, #5a1418); color: #fff3d6; border: 1px solid var(--brass); padding: 10px 20px; border-radius: 3px; font-size: 17px; }
 #cmd button:hover { background: linear-gradient(#9a2a32, #7d1f25); }
 
-#toast { position: absolute; z-index: 30; left: 50%; top: 80px; transform: translateX(-50%); background: #12100ef0; border: 1px solid var(--brass); padding: 10px 18px; border-radius: 3px; color: var(--gas); font-style: italic; animation: fadein .3s both; max-width: 90vw; text-align: center; }
+#toast { position: fixed; z-index: 30; left: 50%; top: 80px; transform: translateX(-50%); background: #12100ef0; border: 1px solid var(--brass); padding: 10px 18px; border-radius: 3px; color: var(--gas); font-style: italic; animation: fadein .3s both; max-width: 90vw; text-align: center; }
 
 /* ------------------------------------------------------------ overlays */
-#overlay { position: absolute; inset: 0; z-index: 20; background: #000b; display: flex; align-items: center; justify-content: center; padding: max(14px, env(safe-area-inset-top)) 14px 14px; animation: fadein .25s both; }
+#overlay { position: fixed; inset: 0; z-index: 70; background: #000b; display: flex; align-items: center; justify-content: center; padding: max(14px, env(safe-area-inset-top)) 14px 14px; animation: fadein .25s both; }
 .sheet { position: relative; width: min(1040px, 100%); max-height: 100%; overflow: auto; background: #1a120b; border: 1px solid var(--brass); border-radius: 6px; box-shadow: 0 20px 80px #000; padding: 22px 26px 26px; }
 .sheet h2 { margin: 0 0 4px; font-weight: 400; color: var(--brass); font-size: 28px; }
 .sheet .lead { color: var(--mute); font-style: italic; margin: 0 0 14px; }
@@ -222,3 +222,10 @@ h1 { margin: 6px 0 12px; font-weight: 400; font-size: clamp(42px, 8vw, 78px); co
 .newsprint .margin { font-style: italic; font-size: 15px; border-top: 1px dotted #1d160e88; margin: 12px 0 0; padding-top: 8px; color: #3a2b18; }
 .newsprint .trust { font-size: 13px; color: #4a3a22; margin: 10px 0 0; }
 @media (max-width: 700px) { .newsprint .cols.long { column-count: 1; } .newsprint { max-height: 60vh; } }
+
+/* collapse the story to see the whole room */
+#dock-toggle { position: absolute; z-index: 6; top: -15px; left: 50%; transform: translateX(-50%); background: #17110c; color: var(--brass); border: 1px solid var(--brass2); border-radius: 12px; width: 44px; height: 22px; line-height: 1; font-size: 14px; padding: 0; cursor: pointer; }
+#dock-toggle:hover, #dock-toggle:focus-visible { color: #fff; border-color: var(--brass); outline: none; }
+#dock.collapsed { height: auto; }
+#dock.collapsed #log { display: none; }
+#dock.collapsed #dock-toggle span { display: inline-block; transform: rotate(180deg); }

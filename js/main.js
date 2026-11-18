@@ -154,6 +154,7 @@ async function submit(text) {
   line('you', text);
   const prevPlace = S.place;
   const { out, ui } = act(S, text);
+  if ($('#dock').classList.contains('collapsed')) { $('#dock').classList.remove('collapsed'); $('#dock-toggle').setAttribute('aria-expanded', 'true'); }
   render(out);
   chips(suggest(S));
   refresh();
@@ -403,7 +404,11 @@ document.addEventListener('keydown', (e) => {
 });
 $('#btn-new').addEventListener('click', startNew);
 $('#btn-continue').addEventListener('click', resume);
-$('#btn-how').addEventListener('click', () => { openHow(); $('#overlay').style.zIndex = 60; $('#app').classList.remove('hidden'); });
+$('#btn-how').addEventListener('click', () => { openHow(); });
 
 showTitle();
+$('#dock-toggle')?.addEventListener('click', () => {
+  const c = $('#dock').classList.toggle('collapsed');
+  $('#dock-toggle').setAttribute('aria-expanded', String(!c));
+});
 window.__game = { get state() { return S; }, submit };

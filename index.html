@@ -31,6 +31,7 @@
   </nav>
   <aside id="portrait" class="hidden" aria-live="polite"></aside>
   <section id="dock">
+    <button id="dock-toggle" type="button" aria-label="Show or hide the story" aria-expanded="true"><span aria-hidden="true">&#9662;</span></button>
     <div id="log" role="log" aria-live="polite"></div>
     <div id="chips"></div>
     <form id="cmd" autocomplete="off">
@@ -39,9 +40,9 @@
       <button type="submit" aria-label="Do it">Do</button>
     </form>
   </section>
-  <div id="overlay" class="hidden" role="dialog" aria-modal="true"></div>
-  <div id="toast" class="hidden"></div>
 </div>
+<div id="overlay" class="hidden" role="dialog" aria-modal="true"></div>
+<div id="toast" class="hidden"></div>
 
 <div id="title">
   <div id="title-art"></div>

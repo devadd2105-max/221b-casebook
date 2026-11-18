@@ -40,6 +40,7 @@ function desk(x, y, w, color = '#3a2416') {
 }
 
 function sign(x, y, w, text, bg = '#12100e', fg = PAL.brass, size = 34) {
+  size = Math.min(size, Math.floor((w - 40) / (String(text).length * 0.72)));   // the lettering always fits its plate
   return `<g><rect x="${x}" y="${y}" width="${w}" height="${size * 1.7}" fill="${bg}" stroke="${PAL.brassDk}" stroke-width="3"/><text x="${x + w / 2}" y="${y + size * 1.15}" text-anchor="middle" font-family="IM Fell English, Georgia, serif" font-size="${size}" fill="${fg}">${esc(text)}</text></g>`;
 }
 
@@ -174,7 +175,7 @@ const KINDS = {
     <g stroke="#0a0806" stroke-width="6"><rect x="200" y="140" width="260" height="320" fill="#10151f"/><path d="M240 140 v320 M300 140 v320 M360 140 v320 M420 140 v320" /></g>
     ${desk(560, 560, 620, '#201810')}${ledgerBook(640, 556)}
     <g transform="translate(1250,330)"><rect width="200" height="330" fill="#2a2a2e" stroke="#0a0a0c" stroke-width="5"/><circle cx="100" cy="150" r="46" fill="#3a3a42" stroke="#0a0a0c" stroke-width="4"/><circle cx="100" cy="150" r="14" fill="${PAL.brass}"/><text x="100" y="60" text-anchor="middle" font-size="22" fill="#9a9280" font-family="serif" font-weight="700">MILNER</text></g>
-    <g transform="translate(700,200)"><rect width="200" height="110" fill="#e9dcbd" stroke="#150c07" stroke-width="3"/><text x="100" y="46" text-anchor="middle" font-family="serif" font-size="22" fill="#2a1a0a">LOANS ARRANGED</text><text x="100" y="80" text-anchor="middle" font-family="serif" font-size="16" fill="#5a4a2a">Discretion assured</text></g>` },
+    <g transform="translate(700,200)"><rect width="200" height="110" fill="#e9dcbd" stroke="#150c07" stroke-width="3"/><text x="100" y="46" text-anchor="middle" font-family="serif" font-size="18" fill="#2a1a0a">LOANS ARRANGED</text><text x="100" y="80" text-anchor="middle" font-family="serif" font-size="16" fill="#5a4a2a">Discretion assured</text></g>` },
   lodging: { wall: '#2a2218', label: 'Pell’s lodgings', sign: 'PERCY ST', draw: () => `
     <rect x="1030" y="440" width="420" height="140" fill="#3a3a44" stroke="#15151a" stroke-width="4"/><rect x="1040" y="400" width="400" height="60" fill="#8a8a96" stroke="#15151a" stroke-width="3"/><rect x="1030" y="580" width="16" height="100" fill="#2a2a2e"/><rect x="1434" y="580" width="16" height="100" fill="#2a2a2e"/>
     <rect x="230" y="260" width="400" height="14" fill="#3a2416" stroke="#150c07" stroke-width="2"/>${booksRow(236, 190, 388, 70, 77, ['#5a1418', '#2a2f4a', '#1f3a2c', '#6a4a1e'])}

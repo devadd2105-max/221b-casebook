@@ -21,7 +21,11 @@ No build step. Serve the folder and open `index.html`:
 
 ## Test
 
-    node --test tests/play.test.mjs
+    node --test tests/play.test.mjs          # unit and route tests
+    node tests/sim/phrasing.mjs              # every question phrasing against every interview option
+    node tests/sim/examine.mjs               # examinations and Irregulars errands
+    node tests/sim/routes.mjs 1 100          # 100 random full playthroughs (seed, runs, skip, harsh, alert, purse)
+    node tests/sim/endings.mjs               # every accusation and verdict at four stages of the case
 
 ## Notes
 
