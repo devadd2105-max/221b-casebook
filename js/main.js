@@ -57,7 +57,8 @@ function intro() {
     ['place', '221B Baker Street'],
     ['narr', 'Sunday, the twelfth of October, 1890. Twenty to nine. The fog has not lifted since Friday, and the rain has taken its place against the glass.'],
     ['narr', 'The fire is lit. Watson is behind the Sunday paper, pretending not to watch you. On the table lies the telegram Mrs. Hudson brought up at breakfast, still unopened, with the chemical table crowding it into one corner.'],
-    ['say', 'Watson', 'Well, Holmes? You have been looking at that envelope for ten minutes. Open it, or I shall.'],
+    ['say', 'Watson', 'Holmes, we have been asked to take a case. Sir Alistair Marlowe has sent for you by telegram: something of his has gone missing from a locked safe. Open the wire, or I shall.'],
+    ['say', 'Watson', 'He begs us to come at once, and we have until Friday afternoon before whoever took it is beyond reach. Where would you have me begin?'],
     ['sys', 'You are Sherlock Holmes. Type anything: where to go, whom to question, what to examine. Click glowing objects in the room, or use the casebook and map.'],
   ];
   for (const l of L) line(...l);
