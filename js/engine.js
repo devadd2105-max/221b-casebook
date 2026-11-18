@@ -218,6 +218,8 @@ export function paperSheets(s, ids) {
 }
 
 function readPapers(s, ids, out) {
+  ids = [...ids];
+  if (!ids.length && s.awaitPapers) ids = [...PAPER_ORDER];   // asked twice: stop asking, hand over the lot
   if (!ids.length) {
     s.awaitPapers = true;
     out.push(say('Watson', 'Which paper shall I fetch, Holmes? We have the Times, the Telegraph, the Morning Post, the Pall Mall Gazette, the City Press and, I regret to say, the Illustrated Police News. Choose one, or several, or all of them.'));
@@ -386,7 +388,7 @@ function actOne(s, text, out) {
   if (s.lastPapers?.length && !found.person.some((e) => !['watson', 'hudson'].includes(e.id)) && /\b(summar|gist|read (it|them|that) (to me|aloud|out)|tell me what (it|they) say|what (does|do) (it|they|the papers?|the newspapers?) say|give me the (gist|summary|headlines)|the facts|brief me|in short|sum (it|them) up)/i.test(text) && !found.paper.length) {
     papersGist(s, out); return;
   }
-  if (s.awaitPapers && !found.person.some((e) => !['watson', 'hudson'].includes(e.id)) && !found.paper.length && /\b(all|every|each|the lot|everything|whole|both|any)\b/i.test(text) && !I.GO) {
+  if (s.awaitPapers && !found.person.some((e) => !['watson', 'hudson'].includes(e.id)) && !found.paper.length && !I.GO && !found.place.length && (/\b(all|every|each|the lot|everything|whole|both|any|whichever|you choose|your choice|surprise me|do it|do so|go ahead|go on|carry on|just|please|sure|yes|yeah|okay|ok|fine)\b/i.test(text) || (!I.ASK && !I.EXAMINE && !I.WAIT && !I.THINK))) {
     readPapers(s, [...PAPER_ORDER], out); return;
   }
   const wantsPapers = found.paper.length || /\b(pass me|hand me|give me|fetch|bring)\b[^.]*\b(papers?|newspapers?)\b/i.test(text) || /\b(newspaper|newspapers|headline|headlines|the news|morning papers|the papers|dailies)\b/i.test(text) || (I.READ_PAPERS && /\bread\b/i.test(text) && !/\b(note|specimen|watermark|stationer|quire|letter|ledger|copy.?book|sample)\b/i.test(text) && !found.object.length);
