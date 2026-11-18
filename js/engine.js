@@ -232,9 +232,9 @@ function readPapers(s, ids, out) {
   for (const id of ids) {
     const ed = editionFor(s, id);
     for (const f of ed.gives) if (learnFact(s, f, 'paper:' + id)) out.push(learnLine(f));
-    if (!s.papersRead.includes(id)) s.papersRead.push(id);
-    const { arrived } = advance(s, 10);
-    deliver(s, arrived, out);
+    const fresh = !s.papersRead.includes(id);
+    if (fresh) s.papersRead.push(id);
+    if (fresh) { const { arrived } = advance(s, 10); deliver(s, arrived, out); }   // only a first reading costs time
   }
   s.lastPapers = ids;
   s.uiNext = { open: 'papers', ids };
