@@ -692,6 +692,7 @@ function playFlavour(s, p, out) {
 // ---------------------------------------------------------------- suggestions (a nudge, never a menu)
 const TOPIC_LABEL = { theft: 'the theft', evening: 'that evening', guests: 'the guests', combination: 'the combination', key: 'the key', safe: 'the safe', note: 'the note', paper: 'the paper', hand: 'the handwriting', ink: 'the ink', debts: 'money troubles', sister: 'his sister', sale: 'a sale of the Star', insurance: 'the insurance', quarrel: 'a quarrel', stairs: 'the back stairs', garden: 'the garden', light: 'the study lamp', servants: 'the servants', boat: 'the boat trains', fence: 'a fence', professional: 'professional thieves', record: 'a record', warrant: 'a warrant', police: 'the police', curse: 'the Star’s curse', value: 'the Star’s value', character: 'his character', employer: 'his employer', lodging: 'his lodging', letters: 'his letters', customers: 'the customers', warn: 'a warning', callers: 'the callers at the door' };
 export function suggest(s) {
+  if (s.awaitPapers) return ['All of them', ...PAPER_ORDER.map((id) => PAPERS[id].name)];   // Watson has just asked which paper
   const out = [];
   const h = parentPlace(s.place);
   const here = peopleHere(s);

@@ -170,3 +170,13 @@ test('papers are passed over, shown in a reader, and Watson can give the gist', 
   r = act(s, 'read the times');
   assert.equal(r.ui.open, 'papers');
 });
+
+test('after Watson asks which paper, the suggestions offer the papers', () => {
+  const s = newGame();
+  act(s, 'Watson, read the papers');
+  const chips = suggest(s);
+  assert.equal(chips[0], 'All of them');
+  assert.ok(chips.length >= 7);
+  act(s, chips[0]);
+  assert.notEqual(suggest(s)[0], 'All of them');
+});
