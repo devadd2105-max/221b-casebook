@@ -76,6 +76,7 @@ test('closed shops on Sunday', () => {
 test('deadline ends the game', () => {
   const s = newGame();
   for (let i = 0; i < 40 && !s.ended; i++) act(s, 'wait until tomorrow');
+  for (let i = 0; i < 30 && !s.ended; i++) act(s, i % 2 ? 'go to marlowe house' : 'go to baker street');
   assert.equal(s.ended?.kind, 'escaped');
 });
 

@@ -662,6 +662,7 @@ function waitFor(s, p, out) {
     mins = target - s.t;
   }
   mins = Math.max(5, Math.min(mins, cap));
+  if (s.t + mins >= deadlineNow(s) - 30) { out.push(narr('You cannot afford to wait that long. The quarry sails at ' + clockText(deadlineNow(s)).replace(/^\w+ \d+ October, /, '') + ' on ' + clockText(deadlineNow(s)).split(' ').slice(0, 3).join(' ').replace(',', '') + ', and waiting that long would hand him the victory.')); return; }
   const { arrived, slept } = advance(s, mins);
   out.push(narr(mins >= 480 ? 'You sleep, and take the day as it comes.' : mins >= 120 ? 'The hours go by with the fog.' : 'You wait.'));
   deliver(s, arrived, out);
